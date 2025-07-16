@@ -93,7 +93,11 @@ func (d *Database) ProcessQuery(userQuery string) error {
 	var lastError string
 
 	for attempt := 1; attempt <= d.config.MaxAttempts; attempt++ {
-		fmt.Printf("🤖 Generating SQL query (attempt %d/%d)...\n", attempt, d.config.MaxAttempts)
+		if attempt == 1 {
+			fmt.Printf("🤖 Generating SQL query...\n")
+		} else {
+			fmt.Printf("🤖 Generating SQL query (attempt %d/%d)...\n", attempt, d.config.MaxAttempts)
+		}
 
 		var prompt string
 		if attempt == 1 {

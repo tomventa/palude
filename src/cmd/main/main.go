@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/joho/godotenv"
@@ -28,6 +29,16 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	fmt.Println("🗄️  Palude - Natural Language Database Query Tool")
+
+	// (moved to cli package)
+	// Print database info
+	cli.PrintDatabaseInfo(cfg.DatabaseURL)
+
+	// (moved to cli package)
+	// Check Ollama status
+	cli.CheckOllamaStatus(cfg.OllamaURL)
 
 	// Start the interactive CLI
 	cli.RunCLI(db)
