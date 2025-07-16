@@ -47,6 +47,11 @@ func RunCLI(db *database.Database) {
 			break
 		}
 
+		if strings.ToLower(query) == "tables" {
+			db.ShowTablesInfo()
+			continue
+		}
+
 		if err := db.ProcessQuery(query); err != nil {
 			fmt.Printf("❌ Error: %v\n\n", err)
 		}

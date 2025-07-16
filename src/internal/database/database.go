@@ -256,3 +256,130 @@ func (d *Database) executeQuery(sqlQuery string) error {
 	fmt.Printf("\n✅ Query executed successfully. %d rows returned.\n\n", rowCount)
 	return nil
 }
+
+// ShowTablesInfo prints all tables, their columns, and row counts
+func (d *Database) ShowTablesInfo() {
+	rows, err := d.db.Query("SHOW TABLES")
+	if err != nil {
+		fmt.Printf("Error fetching tables: %v\n", err)
+		return
+	}
+	defer rows.Close()
+
+	tables := []string{}
+	for rows.Next() {
+		var table string
+		if err := rows.Scan(&table); err == nil {
+			tables = append(tables, table)
+		}
+	}
+
+	if len(tables) == 0 {
+		fmt.Println("No tables found.")
+		return
+	}
+
+	for _, table := range tables {
+		fmt.Printf("\n📋 Table: %s\n", table)
+
+		// Get columns
+		colRows, err := d.db.Query("SHOW COLUMNS FROM `" + table + "`")
+		if err != nil {
+			fmt.Printf("  Error fetching columns: %v\n", err)
+			continue
+		}
+
+		// Read all column info into a slice
+		type colInfo struct {
+			Field   string
+			Type    string
+			Null    string
+			Key     string
+			Default string
+			Extra   string
+		}
+		var cols []colInfo
+
+		for colRows.Next() {
+			var field, colType, null, key string
+			var def sql.NullString
+			var extra string
+			if err := colRows.Scan(&field, &colType, &null, &key, &def, &extra); err == nil {
+				defVal := "NULL"
+				if def.Valid {
+					defVal = def.String
+				}
+				cols = append(cols, colInfo{
+					Field:   field,
+					Type:    colType,
+					Null:    null,
+					Key:     key,
+					Default: defVal,
+					Extra:   extra,
+				})
+			}
+		}
+		colRows.Close()
+
+		// Calculate max width for each column
+		headers := []string{"Field", "Type", "Null", "Key", "Default", "Extra"}
+		widths := make([]int, len(headers))
+		for i, h := range headers {
+			widths[i] = len(h)
+		}
+		for _, c := range cols {
+			if len(c.Field) > widths[0] {
+				widths[0] = len(c.Field)
+			}
+			if len(c.Type) > widths[1] {
+				widths[1] = len(c.Type)
+			}
+			if len(c.Null) > widths[2] {
+				widths[2] = len(c.Null)
+			}
+			if len(c.Key) > widths[3] {
+				widths[3] = len(c.Key)
+			}
+			if len(c.Default) > widths[4] {
+				widths[4] = len(c.Default)
+			}
+			if len(c.Extra) > widths[5] {
+				widths[5] = len(c.Extra)
+			}
+		}
+
+		// Print header
+		fmt.Print("  |")
+		for i, h := range headers {
+			fmt.Printf(" %-*s |", widths[i], h)
+		}
+		fmt.Println()
+		fmt.Print("  +")
+		for _, w := range widths {
+			fmt.Print(strings.Repeat("-", w+2) + "+")
+		}
+		fmt.Println()
+
+		// Print rows
+		for _, c := range cols {
+			fmt.Printf("  | %-*s | %-*s | %-*s | %-*s | %-*s | %-*s |\n",
+				widths[0], c.Field,
+				widths[1], c.Type,
+				widths[2], c.Null,
+				widths[3], c.Key,
+				widths[4], c.Default,
+				widths[5], c.Extra,
+			)
+		}
+
+		// Get row count
+		var count int
+		cntRow := d.db.QueryRow("SELECT COUNT(*) FROM `" + table + "`")
+		if err := cntRow.Scan(&count); err == nil {
+			fmt.Printf("  Rows: %d\n", count)
+		} else {
+			fmt.Printf("  Rows: ? (error: %v)\n", err)
+		}
+	}
+	fmt.Println()
+}
