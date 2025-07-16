@@ -5,6 +5,7 @@ import (
 
 	"github.com/joho/godotenv"
 
+	"github.com/tomventa/palude/internal/cli"
 	"github.com/tomventa/palude/internal/config"
 	"github.com/tomventa/palude/internal/database"
 )
@@ -29,5 +30,5 @@ func main() {
 	defer db.Close()
 
 	// Start the interactive CLI
-	db.Run()
+	cli.RunCLI(db)
 }

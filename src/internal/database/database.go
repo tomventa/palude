@@ -4,11 +4,9 @@ import (
 	"bufio"
 	"database/sql"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
-	"github.com/chzyer/readline"
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/tomventa/palude/internal/config"
@@ -253,49 +251,4 @@ func (d *Database) executeQuery(sqlQuery string) error {
 
 	fmt.Printf("\n✅ Query executed successfully. %d rows returned.\n\n", rowCount)
 	return nil
-}
-
-// Run starts the interactive CLI loop
-func (d *Database) Run() {
-	fmt.Println("🗄️  Palude - Natural Language Database Query Tool")
-	fmt.Printf("Type 'exit' to quit\n\n")
-
-	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          "💬 Enter your query: ",
-		HistoryFile:     "/tmp/palude_history.tmp",
-		InterruptPrompt: "^C",
-		EOFPrompt:       "exit",
-	})
-	if err != nil {
-		fmt.Printf("Failed to initialize readline: %v\n", err)
-		return
-	}
-	defer rl.Close()
-
-	for {
-		line, err := rl.Readline()
-		if err == readline.ErrInterrupt {
-			if len(line) == 0 {
-				break
-			} else {
-				continue
-			}
-		} else if err == io.EOF {
-			break
-		}
-
-		query := strings.TrimSpace(line)
-		if query == "" {
-			continue
-		}
-
-		if strings.ToLower(query) == "exit" || strings.ToLower(query) == "quit" {
-			fmt.Println("👋 Goodbye!")
-			break
-		}
-
-		if err := d.ProcessQuery(query); err != nil {
-			fmt.Printf("❌ Error: %v\n\n", err)
-		}
-	}
 }
