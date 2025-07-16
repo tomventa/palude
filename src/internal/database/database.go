@@ -11,6 +11,7 @@ import (
 
 	"github.com/tomventa/palude/internal/config"
 	"github.com/tomventa/palude/internal/ollama"
+	"github.com/tomventa/palude/internal/tableprint"
 	"github.com/tomventa/palude/internal/utils"
 )
 
@@ -289,17 +290,9 @@ func (d *Database) ShowTablesInfo() {
 			continue
 		}
 
-		// Read all column info into a slice
-		type colInfo struct {
-			Field   string
-			Type    string
-			Null    string
-			Key     string
-			Default string
-			Extra   string
-		}
-		var cols []colInfo
-
+		// Prepare headers and rows for tableprint.PrintTable
+		headers := []string{"Field", "Type", "Null", "Key", "Default", "Extra"}
+		var rowsData [][]string
 		for colRows.Next() {
 			var field, colType, null, key string
 			var def sql.NullString
@@ -309,68 +302,12 @@ func (d *Database) ShowTablesInfo() {
 				if def.Valid {
 					defVal = def.String
 				}
-				cols = append(cols, colInfo{
-					Field:   field,
-					Type:    colType,
-					Null:    null,
-					Key:     key,
-					Default: defVal,
-					Extra:   extra,
-				})
+				rowsData = append(rowsData, []string{field, colType, null, key, defVal, extra})
 			}
 		}
 		colRows.Close()
 
-		// Calculate max width for each column
-		headers := []string{"Field", "Type", "Null", "Key", "Default", "Extra"}
-		widths := make([]int, len(headers))
-		for i, h := range headers {
-			widths[i] = len(h)
-		}
-		for _, c := range cols {
-			if len(c.Field) > widths[0] {
-				widths[0] = len(c.Field)
-			}
-			if len(c.Type) > widths[1] {
-				widths[1] = len(c.Type)
-			}
-			if len(c.Null) > widths[2] {
-				widths[2] = len(c.Null)
-			}
-			if len(c.Key) > widths[3] {
-				widths[3] = len(c.Key)
-			}
-			if len(c.Default) > widths[4] {
-				widths[4] = len(c.Default)
-			}
-			if len(c.Extra) > widths[5] {
-				widths[5] = len(c.Extra)
-			}
-		}
-
-		// Print header
-		fmt.Print("  |")
-		for i, h := range headers {
-			fmt.Printf(" %-*s |", widths[i], h)
-		}
-		fmt.Println()
-		fmt.Print("  +")
-		for _, w := range widths {
-			fmt.Print(strings.Repeat("-", w+2) + "+")
-		}
-		fmt.Println()
-
-		// Print rows
-		for _, c := range cols {
-			fmt.Printf("  | %-*s | %-*s | %-*s | %-*s | %-*s | %-*s |\n",
-				widths[0], c.Field,
-				widths[1], c.Type,
-				widths[2], c.Null,
-				widths[3], c.Key,
-				widths[4], c.Default,
-				widths[5], c.Extra,
-			)
-		}
+		tableprint.PrintTable(headers, rowsData)
 
 		// Get row count
 		var count int
