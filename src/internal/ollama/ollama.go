@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 
-	"dataibase/internal/config"
-	"dataibase/internal/types"
+	"github.com/tomventa/palude/internal/config"
+	"github.com/tomventa/palude/internal/types"
 )
 
 // Client represents an Ollama API client

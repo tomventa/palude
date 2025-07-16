@@ -5,8 +5,8 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"dataibase/internal/config"
-	"dataibase/internal/database"
+	"github.com/tomventa/palude/internal/config"
+	"github.com/tomventa/palude/internal/database"
 )
 
 func main() {

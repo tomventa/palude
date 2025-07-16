@@ -9,9 +9,9 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 
-	"dataibase/internal/config"
-	"dataibase/internal/ollama"
-	"dataibase/internal/utils"
+	"github.com/tomventa/palude/internal/config"
+	"github.com/tomventa/palude/internal/ollama"
+	"github.com/tomventa/palude/internal/utils"
 )
 
 // Database represents the database connection and operations
@@ -255,7 +255,7 @@ func (d *Database) executeQuery(sqlQuery string) error {
 
 // Run starts the interactive CLI loop
 func (d *Database) Run() {
-	fmt.Println("🗄️  Dataibase - Natural Language Database Query Tool")
+	fmt.Println("🗄️  Palude - Natural Language Database Query Tool")
 	fmt.Printf("Type 'exit' to quit\n\n")
 
 	scanner := bufio.NewScanner(os.Stdin)

@@ -1,4 +1,4 @@
-module dataibase
+module github.com/tomventa/palude
 
 go 1.24.4
 
